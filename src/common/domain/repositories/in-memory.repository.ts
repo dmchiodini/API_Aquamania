@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { NotFoundError } from '../errors/notFoundError';
+import { NotFoundError } from '../errors/NotFoundError';
 import {
   RepositoryInterface,
   SearchInput,
@@ -18,7 +18,7 @@ export type CreateProps = {
 export abstract class InMemoryRepository<Model extends ModelProps>
   implements RepositoryInterface<Model, CreateProps>
 {
-  data: Model[] = [];
+  items: Model[] = [];
   sortableFields: string[] = [];
 
   create(props: CreateProps): Model {
@@ -33,7 +33,7 @@ export abstract class InMemoryRepository<Model extends ModelProps>
   }
 
   async insert(model: Model): Promise<Model> {
-    await this.data.push(model);
+    await this.items.push(model);
 
     return model;
   }
@@ -45,16 +45,16 @@ export abstract class InMemoryRepository<Model extends ModelProps>
     const sort_dir = props.sort_dir ?? null;
     const filter = props.filter ?? null;
 
-    const filteredItems = await this.ApplyFilter(this.data, filter);
-    const orderedItems = await this.ApplySort(filteredItems, sort, sort_dir);
-    const paginatedItems = await this.ApplyPaginate(
+    const filteredItems = await this.applyFilter(this.items, filter);
+    const orderedItems = await this.applySort(filteredItems, sort, sort_dir);
+    const paginatedItems = await this.applyPaginate(
       orderedItems,
       page,
       per_page,
     );
 
     return {
-      data: paginatedItems,
+      items: paginatedItems,
       total: filteredItems.length,
       current_page: page,
       per_page,
@@ -64,21 +64,21 @@ export abstract class InMemoryRepository<Model extends ModelProps>
     };
   }
 
-  protected abstract ApplyFilter(
+  protected abstract applyFilter(
     items: Model[],
     filter: string | null,
   ): Promise<Model[]>;
 
-  protected async ApplySort(
-    data: Model[],
+  protected async applySort(
+    items: Model[],
     sort: string | null,
     sort_dir: string | null,
   ): Promise<Model[]> {
     if (!sort || !this.sortableFields.includes(sort)) {
-      return data;
+      return items;
     }
 
-    return [...data].sort((a, b) => {
+    return [...items].sort((a, b) => {
       if (a[sort] < b[sort]) {
         return sort_dir === 'asc' ? -1 : 1;
       }
@@ -90,37 +90,37 @@ export abstract class InMemoryRepository<Model extends ModelProps>
     });
   }
 
-  protected async ApplyPaginate(
-    data: Model[],
+  protected async applyPaginate(
+    items: Model[],
     page: number,
     per_page: number,
   ): Promise<Model[]> {
     const start = (page - 1) * per_page;
     const limit = start + per_page;
-    return data.slice(start, limit);
+    return items.slice(start, limit);
   }
 
   async getById(id: string): Promise<Model> {
     return this._get(id);
   }
 
-  async updated(model: Model): Promise<Model> {
+  async update(model: Model): Promise<Model> {
     await this._get(model.id);
-    const index = this.data.findIndex(item => item.id === model.id);
-    this.data[index] = model;
+    const index = this.items.findIndex(item => item.id === model.id);
+    this.items[index] = model;
     return model;
   }
 
   async delete(id: string): Promise<Model> {
     const model = await this._get(id);
-    const index = this.data.findIndex(item => item.id === id);
-    this.data.splice(index, 1);
+    const index = this.items.findIndex(item => item.id === id);
+    this.items.splice(index, 1);
 
     return model;
   }
 
   protected async _get(id: string): Promise<Model> {
-    const model = this.data.find(item => item.id === id);
+    const model = this.items.find(item => item.id === id);
 
     if (!model) {
       throw new NotFoundError(`Model not found using ID ${id}`);
