@@ -7,7 +7,7 @@ export type SearchInput = {
 };
 
 export type SearchOutput<Model> = {
-  data: Model[];
+  items: Model[];
   per_page: number;
   total: number;
   current_page: number;
@@ -21,6 +21,6 @@ export interface RepositoryInterface<Model, CreateProps> {
   insert(model: Model): Promise<Model>;
   get(props: SearchInput): Promise<SearchOutput<Model>>;
   getById(id: string): Promise<Model>;
-  updated(model: Model): Promise<Model>;
+  update(model: Model): Promise<Model>;
   delete(id: string): Promise<Model>;
 }
