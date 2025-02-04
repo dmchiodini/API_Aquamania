@@ -42,9 +42,9 @@ export class LivingBeing implements LivingBeingModel {
   @Column('uuid')
   category_id: string;
 
-  @CreateDateColumn('created_at')
+  @CreateDateColumn()
   created_at: Date;
 
-  @UpdateDateColumn('updated_at')
+  @UpdateDateColumn()
   updated_at: Date;
 }
