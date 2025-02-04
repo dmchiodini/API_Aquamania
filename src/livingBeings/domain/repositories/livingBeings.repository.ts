@@ -20,6 +20,5 @@ export type CreateLivingBeingProps = {
 export interface LivingBeingsRepository
   extends RepositoryInterface<LivingBeingModel, CreateLivingBeingProps> {
   getByName(name: string): Promise<LivingBeingModel>;
-  getById(id: string): Promise<LivingBeingModel>;
   conflictingName(name: string): Promise<void>;
 }
